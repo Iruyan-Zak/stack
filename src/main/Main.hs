@@ -94,6 +94,7 @@ import           Stack.Solver (solveExtraDeps)
 import           Stack.Types.Version
 import           Stack.Types.Config
 import           Stack.Types.Compiler
+import           Stack.Types.Nix
 import           Stack.Types.StackT
 import           Stack.Upgrade
 import qualified Stack.Upload as Upload
@@ -563,6 +564,8 @@ pathCmd keys go = withBuildConfig go (Stack.Path.path keys)
 setupCmd :: SetupCmdOpts -> GlobalOpts -> IO ()
 setupCmd sco@SetupCmdOpts{..} go@GlobalOpts{..} = do
   lc <- loadConfigWithOpts go
+  when (scoUpgradeCabal && (nixEnable (configNix (lcConfig lc)))) $ do
+    error "--upgrade-cabal cannot be used when nix is activated"
   withUserFileLock go (configStackRoot $ lcConfig lc) $ \lk -> do
     let getCompilerVersion = loadCompilerVersion go lc
     runStackTGlobal (lcConfig lc) go $
